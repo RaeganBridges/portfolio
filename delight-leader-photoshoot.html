@@ -105,10 +105,19 @@
       max-width: 1200px;
       margin: 0 auto;
     }
+    .content-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+    .content-header h1 {
+      margin: 0;
+    }
     #content h1 {
       font-size: 1.5rem;
       font-weight: 600;
-      margin: 0 0 0.5rem;
       color: #5c2a38;
     }
     .select-all-btn {
@@ -142,12 +151,9 @@
       body.unlocked .select-all-btn { display: block; }
     }
     @media (min-width: 768px) {
-      .download-all-btn {
-        position: fixed;
-        top: 1rem;
-        right: 1rem;
-        z-index: 50;
+      .content-header .download-all-btn {
         margin: 0;
+        flex-shrink: 0;
       }
       .select-all-btn { display: none !important; }
     }
@@ -459,8 +465,10 @@
   </div>
 
   <main id="content" aria-hidden="true">
-    <h1>Delight Leader Photoshoot</h1>
-    <button type="button" class="download-all-btn" id="download-all-btn">Save all images</button>
+    <div class="content-header">
+      <h1>Delight Leader Photoshoot</h1>
+      <button type="button" class="download-all-btn" id="download-all-btn">Save all images</button>
+    </div>
     <button type="button" class="select-all-btn" id="select-all-btn">Select all</button>
     <div class="gallery-box-wrap">
       <div class="gallery-box" id="gallery-box">
