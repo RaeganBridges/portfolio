@@ -421,6 +421,7 @@
       function getFilename(path) {
         return path.split('/').pop();
       }
+      var singleDownloadInProgress = false;
       async function downloadImage(imageSrc, name) {
         try {
           var response = await fetch(imageSrc);
@@ -435,13 +436,20 @@
           window.URL.revokeObjectURL(url);
         } catch (err) {
           console.error('Error:', err);
+        } finally {
+          singleDownloadInProgress = false;
         }
       }
       function downloadCurrentImage() {
+        if (singleDownloadInProgress) return;
+        singleDownloadInProgress = true;
         var src = IMAGES[currentIndex];
         downloadImage(src, getFilename(src));
       }
+      var zipDownloadInProgress = false;
       async function downloadAll() {
+        if (zipDownloadInProgress) return;
+        zipDownloadInProgress = true;
         var zip = new JSZip();
         var folderName = 'DelightLeaderPhotoshoot';
         try {
@@ -463,6 +471,8 @@
           URL.revokeObjectURL(url);
         } catch (err) {
           console.error('Error creating zip:', err);
+        } finally {
+          zipDownloadInProgress = false;
         }
       }
 
