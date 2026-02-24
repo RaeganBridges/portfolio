@@ -184,20 +184,14 @@
       top: 1rem;
       right: 5rem;
       z-index: 102;
-      width: 44px;
-      height: 44px;
+      padding: 0.5rem 1rem;
       border: none;
       background: rgba(255, 255, 255, 0.9);
       color: #222;
-      font-size: 1.25rem;
+      font-size: 0.9rem;
       cursor: pointer;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      border-radius: 8px;
       font-family: system-ui, sans-serif;
-      text-decoration: none;
-      line-height: 1;
     }
     #lightbox-download:hover {
       background: #fff;
@@ -292,7 +286,7 @@
 
   <div id="lightbox" aria-hidden="true">
     <div id="lightbox-backdrop"></div>
-    <button type="button" id="lightbox-download" aria-label="Download image">↓</button>
+    <button type="button" id="lightbox-download" aria-label="Download image">Download Image</button>
     <button type="button" id="lightbox-close" aria-label="Close">×</button>
     <button type="button" id="lightbox-prev" aria-label="Previous">‹</button>
     <button type="button" id="lightbox-next" aria-label="Next">›</button>
@@ -400,38 +394,31 @@
       function getFilename(path) {
         return path.split('/').pop();
       }
-      function triggerDownload(url, filename) {
-        fetch(url)
-          .then(function (r) { return r.blob(); })
-          .then(function (blob) {
-            var blobUrl = URL.createObjectURL(blob);
-            var a = document.createElement('a');
-            a.href = blobUrl;
-            a.download = filename;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            setTimeout(function () { URL.revokeObjectURL(blobUrl); }, 100);
-          })
-          .catch(function () {
-            var a = document.createElement('a');
-            a.href = url;
-            a.download = filename;
-            a.target = '_blank';
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-          });
+      async function downloadImage(imageSrc, name) {
+        try {
+          var response = await fetch(imageSrc);
+          var blob = await response.blob();
+          var url = URL.createObjectURL(blob);
+          var anchor = document.createElement('a');
+          anchor.href = url;
+          anchor.download = name;
+          document.body.appendChild(anchor);
+          anchor.click();
+          document.body.removeChild(anchor);
+          window.URL.revokeObjectURL(url);
+        } catch (err) {
+          console.error('Error:', err);
+        }
       }
       function downloadCurrentImage() {
         var src = IMAGES[currentIndex];
-        triggerDownload(src, getFilename(src));
+        downloadImage(src, getFilename(src));
       }
       function downloadAll() {
         var delay = 0;
         IMAGES.forEach(function (src) {
           setTimeout(function () {
-            triggerDownload(src, getFilename(src));
+            downloadImage(src, getFilename(src));
           }, delay);
           delay += 200;
         });
