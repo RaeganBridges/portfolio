@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Delight Leader Photoshoot</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
   <style>
     * { box-sizing: border-box; }
     body {
@@ -82,10 +83,6 @@
     }
     .download-all-btn {
       display: none;
-      position: fixed;
-      top: 1rem;
-      right: 1rem;
-      z-index: 50;
       padding: 0.5rem 1rem;
       font-size: 0.9rem;
       font-weight: 500;
@@ -95,6 +92,7 @@
       color: #222;
       cursor: pointer;
       font-family: inherit;
+      margin: 0 0 1rem;
     }
     body.unlocked .download-all-btn {
       display: block;
@@ -110,8 +108,29 @@
     #content h1 {
       font-size: 1.5rem;
       font-weight: 600;
-      margin: 0 0 1rem;
+      margin: 0 0 0.5rem;
       color: #5c2a38;
+    }
+    @media (max-width: 767px) {
+      #content {
+        padding: 1.25rem 1rem;
+      }
+      #content h1 {
+        font-size: 1.75rem;
+        font-weight: 700;
+        margin: 0 0 0.75rem;
+        color: #3d2028;
+        text-shadow: 0 1px 0 rgba(255, 255, 255, 0.3);
+      }
+    }
+    @media (min-width: 768px) {
+      .download-all-btn {
+        position: fixed;
+        top: 1rem;
+        right: 1rem;
+        z-index: 50;
+        margin: 0;
+      }
     }
     .gallery-box-wrap {
       position: relative;
@@ -281,10 +300,9 @@
     </form>
   </div>
 
-  <button type="button" class="download-all-btn" id="download-all-btn">Save all images</button>
-
   <main id="content" aria-hidden="true">
     <h1>Delight Leader Photoshoot</h1>
+    <button type="button" class="download-all-btn" id="download-all-btn">Save all images</button>
     <div class="gallery-box-wrap">
       <div class="gallery-box" id="gallery-box">
         <!-- filled by JS -->
@@ -423,14 +441,29 @@
         var src = IMAGES[currentIndex];
         downloadImage(src, getFilename(src));
       }
-      function downloadAll() {
-        var delay = 0;
-        IMAGES.forEach(function (src) {
-          setTimeout(function () {
-            downloadImage(src, getFilename(src));
-          }, delay);
-          delay += 200;
-        });
+      async function downloadAll() {
+        var zip = new JSZip();
+        var folderName = 'DelightLeaderPhotoshoot';
+        try {
+          for (var i = 0; i < IMAGES.length; i++) {
+            var src = IMAGES[i];
+            var name = getFilename(src);
+            var response = await fetch(src);
+            var blob = await response.blob();
+            zip.file(folderName + '/' + name, blob);
+          }
+          var zipBlob = await zip.generateAsync({ type: 'blob' });
+          var url = URL.createObjectURL(zipBlob);
+          var a = document.createElement('a');
+          a.href = url;
+          a.download = folderName + '.zip';
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          URL.revokeObjectURL(url);
+        } catch (err) {
+          console.error('Error creating zip:', err);
+        }
       }
 
       document.getElementById('lightbox-download').addEventListener('click', downloadCurrentImage);
