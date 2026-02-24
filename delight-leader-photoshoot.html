@@ -111,6 +111,22 @@
       margin: 0 0 0.5rem;
       color: #5c2a38;
     }
+    .select-all-btn {
+      display: none;
+      padding: 0.5rem 1rem;
+      font-size: 0.9rem;
+      font-weight: 500;
+      border: none;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.95);
+      color: #222;
+      cursor: pointer;
+      font-family: inherit;
+      margin: 0 0 1rem;
+    }
+    .select-all-btn:hover {
+      background: #fff;
+    }
     @media (max-width: 767px) {
       #content {
         padding: 1.25rem 1rem;
@@ -122,6 +138,8 @@
         color: #3d2028;
         text-shadow: 0 1px 0 rgba(255, 255, 255, 0.3);
       }
+      .download-all-btn { display: none !important; }
+      body.unlocked .select-all-btn { display: block; }
     }
     @media (min-width: 768px) {
       .download-all-btn {
@@ -131,6 +149,144 @@
         z-index: 50;
         margin: 0;
       }
+      .select-all-btn { display: none !important; }
+    }
+    .gallery-item {
+      position: relative;
+      border-radius: 4px;
+      overflow: hidden;
+      min-height: 180px;
+    }
+    .gallery-item .selection-checkbox {
+      display: none;
+      position: absolute;
+      top: 0.5rem;
+      left: 0.5rem;
+      width: 1.5rem;
+      height: 1.5rem;
+      padding: 0;
+      border: 2px solid #fff;
+      border-radius: 4px;
+      background: rgba(0, 0, 0, 0.3);
+      z-index: 2;
+      cursor: pointer;
+      font: inherit;
+      -webkit-appearance: none;
+      appearance: none;
+    }
+    .gallery-item.selected .selection-checkbox {
+      display: block;
+      background: rgba(92, 42, 56, 0.9);
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3'%3E%3Cpath d='M5 12l5 5L20 7'/%3E%3C/svg%3E");
+      background-size: 100% 100%;
+    }
+    .selection-mode .gallery-item .selection-checkbox:hover {
+      background: rgba(0, 0, 0, 0.5);
+    }
+    .selection-mode .gallery-item.selected .selection-checkbox:hover {
+      background: rgba(92, 42, 56, 1);
+    }
+    .selection-mode .gallery-item .selection-checkbox {
+      display: block;
+    }
+    .selection-bar {
+      display: none;
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      z-index: 60;
+      padding: 0.75rem 1rem;
+      background: rgba(92, 42, 56, 0.95);
+      color: #fff;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      align-items: center;
+      justify-content: center;
+    }
+    .selection-bar.open {
+      display: flex;
+    }
+    .selection-bar .save-selected-btn,
+    .selection-bar .selection-cancel-btn,
+    .selection-bar .deselect-all-btn {
+      padding: 0.5rem 1rem;
+      border: none;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      font-weight: 500;
+      cursor: pointer;
+      font-family: inherit;
+    }
+    .selection-bar .save-selected-btn {
+      background: #fff;
+      color: #5c2a38;
+    }
+    .selection-bar .deselect-all-btn {
+      background: rgba(255, 255, 255, 0.25);
+      color: #fff;
+    }
+    .selection-bar .selection-cancel-btn {
+      background: transparent;
+      color: #fff;
+      text-decoration: underline;
+    }
+    #save-screen {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 70;
+      background: #f8c4ce;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem;
+    }
+    #save-screen.open {
+      display: flex;
+    }
+    #save-screen h2 {
+      font-size: 1.25rem;
+      color: #5c2a38;
+      margin: 0 0 1rem;
+      text-align: center;
+    }
+    #save-screen .save-screen-thumbnails {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(64px, 1fr));
+      gap: 0.5rem;
+      max-width: 320px;
+      max-height: 40vh;
+      overflow-y: auto;
+      margin-bottom: 1rem;
+    }
+    #save-screen .save-screen-thumbnails img {
+      width: 100%;
+      aspect-ratio: 1;
+      object-fit: cover;
+      border-radius: 4px;
+    }
+    #save-screen .save-screen-actions {
+      display: flex;
+      gap: 0.75rem;
+    }
+    #save-screen .save-screen-download-btn,
+    #save-screen .save-screen-back-btn {
+      padding: 0.6rem 1.25rem;
+      border: none;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: 500;
+      cursor: pointer;
+      font-family: inherit;
+    }
+    #save-screen .save-screen-download-btn {
+      background: #5c2a38;
+      color: #fff;
+    }
+    #save-screen .save-screen-back-btn {
+      background: #fff;
+      color: #5c2a38;
     }
     .gallery-box-wrap {
       position: relative;
@@ -174,10 +330,12 @@
     .gallery-box img {
       width: 100%;
       height: 180px;
+      min-height: 180px;
       object-fit: cover;
       display: block;
       cursor: pointer;
       border-radius: 4px;
+      box-sizing: border-box;
     }
     #lightbox {
       position: fixed;
@@ -303,12 +461,30 @@
   <main id="content" aria-hidden="true">
     <h1>Delight Leader Photoshoot</h1>
     <button type="button" class="download-all-btn" id="download-all-btn">Save all images</button>
+    <button type="button" class="select-all-btn" id="select-all-btn">Select all</button>
     <div class="gallery-box-wrap">
       <div class="gallery-box" id="gallery-box">
         <!-- filled by JS -->
       </div>
     </div>
   </main>
+
+  <div class="selection-bar" id="selection-bar">
+    <span class="selection-count" id="selection-count">0 selected</span>
+    <button type="button" class="save-selected-btn" id="save-selected-btn">Save selected</button>
+    <button type="button" class="deselect-all-btn" id="deselect-all-btn">Deselect all</button>
+    <button type="button" class="selection-cancel-btn" id="selection-cancel-btn">Cancel</button>
+  </div>
+
+  <div id="save-screen" aria-hidden="true">
+    <h2 id="save-screen-title">Save images</h2>
+    <div class="save-screen-thumbnails" id="save-screen-thumbnails"></div>
+    <p class="lightbox-save-hint" style="margin:0 0 0.5rem;font-size:0.8rem;">Download the zip, then open and save to Photos.</p>
+    <div class="save-screen-actions">
+      <button type="button" class="save-screen-download-btn" id="save-screen-download-btn">Download</button>
+      <button type="button" class="save-screen-back-btn" id="save-screen-back-btn">Back</button>
+    </div>
+  </div>
 
   <div id="lightbox" aria-hidden="true">
     <div id="lightbox-backdrop"></div>
@@ -386,13 +562,141 @@
       var backdrop = document.getElementById('lightbox-backdrop');
       var currentIndex = 0;
 
+      var selectedIndices = new Set();
+      var selectionMode = false;
+
       IMAGES.forEach(function (src, i) {
+        var item = document.createElement('div');
+        item.className = 'gallery-item';
+        item.dataset.index = i;
+        var check = document.createElement('button');
+        check.type = 'button';
+        check.className = 'selection-checkbox';
+        check.setAttribute('aria-label', 'Select or deselect photo');
         var img = document.createElement('img');
         img.src = src;
         img.alt = 'Photo ' + (i + 1);
         img.dataset.index = i;
-        box.appendChild(img);
+        item.appendChild(check);
+        item.appendChild(img);
+        box.appendChild(item);
       });
+
+      function updateSelectionCount() {
+        var n = selectedIndices.size;
+        var el = document.getElementById('selection-count');
+        if (el) el.textContent = n + ' selected';
+      }
+      function setSelectionMode(on) {
+        selectionMode = on;
+        if (on) {
+          document.body.classList.add('selection-mode');
+          document.getElementById('selection-bar').classList.add('open');
+          updateSelectionCount();
+        } else {
+          document.body.classList.remove('selection-mode');
+          document.getElementById('selection-bar').classList.remove('open');
+          selectedIndices.clear();
+          box.querySelectorAll('.gallery-item').forEach(function (item) {
+            item.classList.remove('selected');
+          });
+        }
+      }
+      function toggleSelected(index) {
+        if (selectedIndices.has(index)) {
+          selectedIndices.delete(index);
+        } else {
+          selectedIndices.add(index);
+        }
+        var item = box.querySelector('.gallery-item[data-index="' + index + '"]');
+        if (item) item.classList.toggle('selected', selectedIndices.has(index));
+        updateSelectionCount();
+      }
+      function deselectAll() {
+        selectedIndices.clear();
+        box.querySelectorAll('.gallery-item.selected').forEach(function (item) {
+          item.classList.remove('selected');
+        });
+        updateSelectionCount();
+      }
+      function selectAll() {
+        for (var i = 0; i < IMAGES.length; i++) {
+          selectedIndices.add(i);
+          var item = box.querySelector('.gallery-item[data-index="' + i + '"]');
+          if (item) item.classList.add('selected');
+        }
+        updateSelectionCount();
+        document.body.classList.add('selection-mode');
+        document.getElementById('selection-bar').classList.add('open');
+      }
+      function openSaveScreen() {
+        var list = selectedIndices.size ? Array.from(selectedIndices).sort(function (a, b) { return a - b; }) : [];
+        if (list.length === 0) return;
+        document.getElementById('save-screen-title').textContent = 'Save ' + list.length + ' image' + (list.length !== 1 ? 's' : '') + ' to camera roll';
+        var thumbWrap = document.getElementById('save-screen-thumbnails');
+        thumbWrap.innerHTML = '';
+        list.forEach(function (i) {
+          var im = document.createElement('img');
+          im.src = IMAGES[i];
+          im.alt = '';
+          thumbWrap.appendChild(im);
+        });
+        document.getElementById('save-screen').classList.add('open');
+        document.getElementById('save-screen').setAttribute('aria-hidden', 'false');
+      }
+      function closeSaveScreen() {
+        document.getElementById('save-screen').classList.remove('open');
+        document.getElementById('save-screen').setAttribute('aria-hidden', 'true');
+        setSelectionMode(false);
+      }
+      async function downloadSelected() {
+        var list = Array.from(selectedIndices).sort(function (a, b) { return a - b; });
+        if (list.length === 0) return;
+        if (zipDownloadInProgress) return;
+        zipDownloadInProgress = true;
+        var zip = new JSZip();
+        var folderName = 'DelightLeaderPhotoshoot';
+        try {
+          for (var j = 0; j < list.length; j++) {
+            var idx = list[j];
+            var src = IMAGES[idx];
+            var name = getFilename(src);
+            var response = await fetch(src);
+            var blob = await response.blob();
+            zip.file(folderName + '/' + name, blob);
+          }
+          var zipBlob = await zip.generateAsync({ type: 'blob' });
+          var url = URL.createObjectURL(zipBlob);
+          var a = document.createElement('a');
+          a.href = url;
+          a.download = folderName + '.zip';
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          URL.revokeObjectURL(url);
+          closeSaveScreen();
+        } catch (err) {
+          console.error('Error creating zip:', err);
+        } finally {
+          zipDownloadInProgress = false;
+        }
+      }
+
+      document.getElementById('select-all-btn').addEventListener('click', function () {
+        selectAll();
+      });
+      document.getElementById('deselect-all-btn').addEventListener('click', deselectAll);
+      document.getElementById('selection-cancel-btn').addEventListener('click', function () {
+        setSelectionMode(false);
+      });
+      document.getElementById('save-selected-btn').addEventListener('click', function () {
+        if (selectedIndices.size === 0) return;
+        openSaveScreen();
+      });
+      document.getElementById('save-screen-download-btn').addEventListener('click', function () {
+        downloadSelected();
+      });
+      document.getElementById('save-screen-back-btn').addEventListener('click', closeSaveScreen);
 
       function openLightbox(index) {
         currentIndex = index;
@@ -413,11 +717,22 @@
         lightboxImg.src = IMAGES[currentIndex];
       }
 
-      box.addEventListener('click', function (e) {
-        if (e.target.tagName === 'IMG' && e.target.dataset.index !== undefined) {
-          openLightbox(parseInt(e.target.dataset.index, 10));
+      function handleGalleryItemAction(e) {
+        var item = e.target.closest && e.target.closest('.gallery-item');
+        if (!item) return;
+        var index = parseInt(item.getAttribute('data-index'), 10);
+        if (isNaN(index)) return;
+        if (selectionMode) {
+          e.preventDefault();
+          e.stopPropagation();
+          toggleSelected(index);
+          return;
         }
-      });
+        if (e.target.tagName === 'IMG') {
+          openLightbox(index);
+        }
+      }
+      box.addEventListener('click', handleGalleryItemAction);
       function getFilename(path) {
         return path.split('/').pop();
       }
