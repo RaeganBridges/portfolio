@@ -112,6 +112,11 @@
       gap: 1rem;
       margin-bottom: 1rem;
     }
+    .actions-row {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
     .home-btn {
       padding: 0.4rem 0.8rem;
       font-size: 0.85rem;
@@ -156,12 +161,25 @@
       #content {
         padding: 1.25rem 1rem;
       }
-      #content h1 {
+      .content-header {
+        flex-wrap: wrap;
+      }
+      .content-header h1 {
+        order: 1;
+        width: 100%;
         font-size: 1.75rem;
         font-weight: 700;
         margin: 0 0 0.75rem;
         color: #5c2a38;
         text-shadow: 0 1px 0 rgba(255, 255, 255, 0.3);
+      }
+      .content-header .home-btn {
+        order: 2;
+      }
+      .content-header .actions-row {
+        order: 3;
+        width: auto;
+        margin-left: auto;
       }
       .download-all-btn { display: none !important; }
       body.unlocked .select-all-btn { display: block; }
@@ -479,9 +497,11 @@
     <div class="content-header">
       <a href="index.html" class="home-btn">Home</a>
       <h1>Knoxville</h1>
-      <button type="button" class="download-all-btn" id="download-all-btn">Save all images</button>
+      <div class="actions-row">
+        <button type="button" class="download-all-btn" id="download-all-btn">Save all images</button>
+        <button type="button" class="select-all-btn" id="select-all-btn">Select all</button>
+      </div>
     </div>
-    <button type="button" class="select-all-btn" id="select-all-btn">Select all</button>
     <div class="gallery-box-wrap">
       <div class="gallery-box" id="gallery-box">
         <!-- filled by JS -->
@@ -498,7 +518,7 @@
   <div id="save-screen" aria-hidden="true">
     <h2 id="save-screen-title">Download zip</h2>
     <div class="save-screen-thumbnails" id="save-screen-thumbnails"></div>
-    <p class="lightbox-save-hint" style="margin:0 0 0.5rem;font-size:0.8rem;">One zip file will download with all selected photos. On your phone, open the zip and save images to Photos.</p>
+    <p class="lightbox-save-hint" id="save-screen-hint" style="margin:0 0 0.5rem;font-size:0.8rem;">One zip file will download with all selected photos. On your phone, open the zip and save images to Photos.</p>
     <div class="save-screen-actions">
       <button type="button" class="save-screen-download-btn" id="save-screen-download-btn">Download zip</button>
       <button type="button" class="save-screen-back-btn" id="save-screen-back-btn">Back</button>
@@ -633,7 +653,19 @@
       function openSaveScreen() {
         var list = selectedIndices.size ? Array.from(selectedIndices).sort(function (a, b) { return a - b; }) : [];
         if (list.length === 0) return;
-        document.getElementById('save-screen-title').textContent = 'Download zip of ' + list.length + ' photo' + (list.length !== 1 ? 's' : '');
+        var isMob = window.matchMedia && window.matchMedia('(max-width: 767px)').matches;
+        document.getElementById('save-screen-title').textContent = isMob
+          ? 'Download ' + list.length + ' photo' + (list.length !== 1 ? 's' : '')
+          : 'Download zip of ' + list.length + ' photo' + (list.length !== 1 ? 's' : '');
+        var hint = document.getElementById('save-screen-hint');
+        var dlBtn = document.getElementById('save-screen-download-btn');
+        if (isMob) {
+          if (hint) hint.textContent = 'Images will download one by one. Save each to Photos.';
+          if (dlBtn) dlBtn.textContent = 'Download images';
+        } else {
+          if (hint) hint.textContent = 'One zip file will download with all selected photos. On your phone, open the zip and save images to Photos.';
+          if (dlBtn) dlBtn.textContent = 'Download zip';
+        }
         var thumbWrap = document.getElementById('save-screen-thumbnails');
         thumbWrap.innerHTML = '';
         list.forEach(function (i) {
@@ -650,34 +682,57 @@
         document.getElementById('save-screen').setAttribute('aria-hidden', 'true');
         setSelectionMode(false);
       }
+      function isMobile() {
+        return window.matchMedia && window.matchMedia('(max-width: 767px)').matches;
+      }
       async function downloadSelected() {
         var list = Array.from(selectedIndices).sort(function (a, b) { return a - b; });
         if (list.length === 0) return;
         if (zipDownloadInProgress) return;
         zipDownloadInProgress = true;
-        var zip = new JSZip();
         var folderName = 'Knox';
         try {
-          for (var j = 0; j < list.length; j++) {
-            var idx = list[j];
-            var src = IMAGES[idx];
-            var name = getFilename(src);
-            var response = await fetch(src);
-            var blob = await response.blob();
-            zip.file(folderName + '/' + name, blob);
+          if (isMobile()) {
+            for (var j = 0; j < list.length; j++) {
+              var idx = list[j];
+              var src = IMAGES[idx];
+              var name = getFilename(src);
+              var response = await fetch(src);
+              var blob = await response.blob();
+              var url = URL.createObjectURL(blob);
+              var a = document.createElement('a');
+              a.href = url;
+              a.download = name;
+              document.body.appendChild(a);
+              a.click();
+              document.body.removeChild(a);
+              URL.revokeObjectURL(url);
+              if (j < list.length - 1) await new Promise(function (r) { setTimeout(r, 250); });
+            }
+            closeSaveScreen();
+          } else {
+            var zip = new JSZip();
+            for (var j = 0; j < list.length; j++) {
+              var idx = list[j];
+              var src = IMAGES[idx];
+              var name = getFilename(src);
+              var response = await fetch(src);
+              var blob = await response.blob();
+              zip.file(folderName + '/' + name, blob);
+            }
+            var zipBlob = await zip.generateAsync({ type: 'blob' });
+            var url = URL.createObjectURL(zipBlob);
+            var a = document.createElement('a');
+            a.href = url;
+            a.download = folderName + '.zip';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            closeSaveScreen();
           }
-          var zipBlob = await zip.generateAsync({ type: 'blob' });
-          var url = URL.createObjectURL(zipBlob);
-          var a = document.createElement('a');
-          a.href = url;
-          a.download = folderName + '.zip';
-          document.body.appendChild(a);
-          a.click();
-          document.body.removeChild(a);
-          URL.revokeObjectURL(url);
-          closeSaveScreen();
         } catch (err) {
-          console.error('Error creating zip:', err);
+          console.error('Download failed:', err);
         } finally {
           zipDownloadInProgress = false;
         }
