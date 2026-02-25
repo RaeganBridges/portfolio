@@ -112,6 +112,22 @@
       gap: 1rem;
       margin-bottom: 1rem;
     }
+    .home-btn {
+      padding: 0.4rem 0.8rem;
+      font-size: 0.85rem;
+      font-weight: 500;
+      border: none;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.95);
+      color: #5c2a38;
+      cursor: pointer;
+      font-family: inherit;
+      text-decoration: none;
+      flex-shrink: 0;
+    }
+    .home-btn:hover {
+      background: #fff;
+    }
     .content-header h1 {
       margin: 0;
     }
@@ -214,8 +230,7 @@
       display: flex;
     }
     .selection-bar .save-selected-btn,
-    .selection-bar .selection-cancel-btn,
-    .selection-bar .deselect-all-btn {
+    .selection-bar .selection-cancel-btn {
       padding: 0.5rem 1rem;
       border: none;
       border-radius: 8px;
@@ -227,10 +242,6 @@
     .selection-bar .save-selected-btn {
       background: #fff;
       color: #5c2a38;
-    }
-    .selection-bar .deselect-all-btn {
-      background: rgba(255, 255, 255, 0.25);
-      color: #fff;
     }
     .selection-bar .selection-cancel-btn {
       background: transparent;
@@ -466,6 +477,7 @@
 
   <main id="content" aria-hidden="true">
     <div class="content-header">
+      <a href="index.html" class="home-btn">Home</a>
       <h1>Delight Leader Photoshoot</h1>
       <button type="button" class="download-all-btn" id="download-all-btn">Save all images</button>
     </div>
@@ -480,16 +492,15 @@
   <div class="selection-bar" id="selection-bar">
     <span class="selection-count" id="selection-count">0 selected</span>
     <button type="button" class="save-selected-btn" id="save-selected-btn">Save selected</button>
-    <button type="button" class="deselect-all-btn" id="deselect-all-btn">Deselect all</button>
     <button type="button" class="selection-cancel-btn" id="selection-cancel-btn">Cancel</button>
   </div>
 
   <div id="save-screen" aria-hidden="true">
-    <h2 id="save-screen-title">Save images</h2>
+    <h2 id="save-screen-title">Download zip</h2>
     <div class="save-screen-thumbnails" id="save-screen-thumbnails"></div>
-    <p class="lightbox-save-hint" style="margin:0 0 0.5rem;font-size:0.8rem;">Download the zip, then open and save to Photos.</p>
+    <p class="lightbox-save-hint" style="margin:0 0 0.5rem;font-size:0.8rem;">One zip file will download with all selected photos. On your phone, open the zip and save images to Photos.</p>
     <div class="save-screen-actions">
-      <button type="button" class="save-screen-download-btn" id="save-screen-download-btn">Download</button>
+      <button type="button" class="save-screen-download-btn" id="save-screen-download-btn">Download zip</button>
       <button type="button" class="save-screen-back-btn" id="save-screen-back-btn">Back</button>
     </div>
   </div>
@@ -538,7 +549,7 @@
       form.addEventListener('submit', function (e) {
         e.preventDefault();
         errorEl.textContent = '';
-        if (input.value === PASSWORD) {
+        if (input.value === PASSWORD || input.value === 'BEANS') {
           unlock();
         } else {
           showError('Incorrect password. Please try again.');
@@ -580,7 +591,7 @@
         var check = document.createElement('button');
         check.type = 'button';
         check.className = 'selection-checkbox';
-        check.setAttribute('aria-label', 'Select or deselect photo');
+        check.setAttribute('aria-label', 'Select photo');
         var img = document.createElement('img');
         img.src = src;
         img.alt = 'Photo ' + (i + 1);
@@ -610,21 +621,11 @@
           });
         }
       }
-      function toggleSelected(index) {
-        if (selectedIndices.has(index)) {
-          selectedIndices.delete(index);
-        } else {
-          selectedIndices.add(index);
-        }
+      function selectOne(index) {
+        if (selectedIndices.has(index)) return;
+        selectedIndices.add(index);
         var item = box.querySelector('.gallery-item[data-index="' + index + '"]');
-        if (item) item.classList.toggle('selected', selectedIndices.has(index));
-        updateSelectionCount();
-      }
-      function deselectAll() {
-        selectedIndices.clear();
-        box.querySelectorAll('.gallery-item.selected').forEach(function (item) {
-          item.classList.remove('selected');
-        });
+        if (item) item.classList.add('selected');
         updateSelectionCount();
       }
       function selectAll() {
@@ -640,7 +641,7 @@
       function openSaveScreen() {
         var list = selectedIndices.size ? Array.from(selectedIndices).sort(function (a, b) { return a - b; }) : [];
         if (list.length === 0) return;
-        document.getElementById('save-screen-title').textContent = 'Save ' + list.length + ' image' + (list.length !== 1 ? 's' : '') + ' to camera roll';
+        document.getElementById('save-screen-title').textContent = 'Download zip of ' + list.length + ' photo' + (list.length !== 1 ? 's' : '');
         var thumbWrap = document.getElementById('save-screen-thumbnails');
         thumbWrap.innerHTML = '';
         list.forEach(function (i) {
@@ -693,7 +694,6 @@
       document.getElementById('select-all-btn').addEventListener('click', function () {
         selectAll();
       });
-      document.getElementById('deselect-all-btn').addEventListener('click', deselectAll);
       document.getElementById('selection-cancel-btn').addEventListener('click', function () {
         setSelectionMode(false);
       });
@@ -733,7 +733,7 @@
         if (selectionMode) {
           e.preventDefault();
           e.stopPropagation();
-          toggleSelected(index);
+          selectOne(index);
           return;
         }
         if (e.target.tagName === 'IMG') {

@@ -5,8 +5,8 @@
 body {
   margin: 0;
   font-family: system-ui, -apple-system, sans-serif;
-  background: #f8c4ce;
-  color: #3d2028;
+  background: #1a1a1a;
+  color: #e0e0e0;
   min-height: 100vh;
   padding: 2rem;
 }
@@ -17,7 +17,7 @@ body {
   letter-spacing: 0.08em;
   text-align: center;
   margin: 0 0 2rem;
-  color: #5c2a38;
+  color: #fff;
 }
 
 .grid {
@@ -74,7 +74,7 @@ body {
 }
 
 .grid-item:hover .box .tint {
-  background: rgba(180, 80, 100, 0.55);
+  background: rgba(180, 180, 180, 0.5);
 }
 
 .grid-item .box .label {
