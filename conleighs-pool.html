@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Conleigh's Pool</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <script src="gallery-mosaic.js"></script>
   <style>
     * { box-sizing: border-box; }
     body {
@@ -203,9 +204,9 @@
     }
     .gallery-item {
       position: relative;
-      border-radius: 4px;
-      overflow: hidden;
-      min-height: 180px;
+      flex: 0 0 auto;
+      border-radius: 0;
+      line-height: 0;
     }
     .gallery-item .selection-checkbox {
       display: none;
@@ -335,52 +336,28 @@
     }
     .gallery-box-wrap {
       position: relative;
-      height: 90vh;
-      max-height: 90vh;
-      border: 3px solid #fff;
-      border-radius: 8px;
-      overflow: hidden;
-    }
-    .gallery-box-wrap::before,
-    .gallery-box-wrap::after {
-      content: '';
-      position: absolute;
-      left: 0;
-      right: 0;
-      height: 3rem;
-      pointer-events: none;
-      z-index: 1;
-    }
-    .gallery-box-wrap::before {
-      top: 0;
-      border-radius: 5px 5px 0 0;
-      background: linear-gradient(to bottom, #fff 0%, transparent 100%);
-    }
-    .gallery-box-wrap::after {
-      bottom: 0;
-      border-radius: 0 0 5px 5px;
-      background: linear-gradient(to top, #fff 0%, transparent 100%);
+      max-width: 1100px;
+      margin: 0 auto;
     }
     .gallery-box {
-      position: absolute;
-      inset: 0;
-      border-radius: 6px;
-      background: #fff;
-      padding: 1rem;
-      overflow-y: auto;
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-      gap: 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      background: transparent;
     }
-    .gallery-box img {
+    .gallery-row {
+      display: flex;
+      align-items: stretch;
+      gap: 3px;
       width: 100%;
-      height: 180px;
-      min-height: 180px;
-      object-fit: cover;
+      overflow: hidden;
+    }
+    .gallery-item img {
       display: block;
       cursor: pointer;
-      border-radius: 4px;
-      box-sizing: border-box;
+      border-radius: 0;
+      width: auto;
+      height: auto;
     }
     #lightbox {
       position: fixed;
@@ -624,22 +601,9 @@
       var selectedIndices = new Set();
       var selectionMode = false;
 
-      IMAGES.forEach(function (src, i) {
-        var item = document.createElement('div');
-        item.className = 'gallery-item';
-        item.dataset.index = i;
-        var check = document.createElement('button');
-        check.type = 'button';
-        check.className = 'selection-checkbox';
-        check.setAttribute('aria-label', 'Select photo');
-        var img = document.createElement('img');
-        img.src = src;
-        img.alt = 'Photo ' + (i + 1);
-        img.dataset.index = i;
-        item.appendChild(check);
-        item.appendChild(img);
-        box.appendChild(item);
-      });
+      initGalleryMosaic(box, IMAGES, function (ordered) {
+        IMAGES.length = 0;
+        Array.prototype.push.apply(IMAGES, ordered);
 
       function updateSelectionCount() {
         var n = selectedIndices.size;
@@ -886,6 +850,7 @@
         if (e.key === 'Escape') closeLightbox();
         if (e.key === 'ArrowLeft') showPrev();
         if (e.key === 'ArrowRight') showNext();
+      });
       });
     })();
   </script>
