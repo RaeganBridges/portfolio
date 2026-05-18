@@ -1,6 +1,6 @@
 (function (global) {
   var ROW_PATTERN = [3, 4, 3, 4];
-  var GAP = 3;
+  var GAP = 6;
   var DEFAULT_RATIO = 0.667;
 
   function loadMeta(src) {
