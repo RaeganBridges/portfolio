@@ -542,6 +542,7 @@
         document.body.classList.add('unlocked');
         gate.classList.add('hidden');
         content.setAttribute('aria-hidden', 'false');
+        document.dispatchEvent(new CustomEvent('gallery-unlock'));
       }
 
       function showError(msg) {
@@ -567,34 +568,7 @@
     })();
 
     (function () {
-      var IMAGES = [
-        'delight-seniors-images/D_001.png', 'delight-seniors-images/D_002.png', 'delight-seniors-images/D_003.png',
-        'delight-seniors-images/D_004.png', 'delight-seniors-images/D_005.png', 'delight-seniors-images/D_006.png',
-        'delight-seniors-images/D_007.png', 'delight-seniors-images/D_008.png', 'delight-seniors-images/D_009.png',
-        'delight-seniors-images/D_010.png', 'delight-seniors-images/D_011.png', 'delight-seniors-images/D_012.png',
-        'delight-seniors-images/D_013.png', 'delight-seniors-images/D_014.png', 'delight-seniors-images/D_015.png',
-        'delight-seniors-images/D_016.png', 'delight-seniors-images/D_017.png', 'delight-seniors-images/D_018.png',
-        'delight-seniors-images/D_019.png', 'delight-seniors-images/D_020.png', 'delight-seniors-images/D_021.png',
-        'delight-seniors-images/D_022.png', 'delight-seniors-images/D_023.png', 'delight-seniors-images/D_024.png',
-        'delight-seniors-images/D_025.png', 'delight-seniors-images/D_026.png', 'delight-seniors-images/D_027.png',
-        'delight-seniors-images/D_028.png', 'delight-seniors-images/D_029.png', 'delight-seniors-images/D_030.png',
-        'delight-seniors-images/D_031.png', 'delight-seniors-images/D_032.png', 'delight-seniors-images/D_033.png',
-        'delight-seniors-images/D_034.png', 'delight-seniors-images/D_035.png', 'delight-seniors-images/D_036.png',
-        'delight-seniors-images/D_037.png', 'delight-seniors-images/D_038.png', 'delight-seniors-images/D_039.png',
-        'delight-seniors-images/D_040.png', 'delight-seniors-images/D_041.png', 'delight-seniors-images/D_042.png',
-        'delight-seniors-images/D_043.png', 'delight-seniors-images/D_044.png', 'delight-seniors-images/D_045.png',
-        'delight-seniors-images/D_046.png', 'delight-seniors-images/D_047.png', 'delight-seniors-images/D_048.png',
-        'delight-seniors-images/D_049.png', 'delight-seniors-images/D_050.png', 'delight-seniors-images/D_051.png',
-        'delight-seniors-images/D_052.png', 'delight-seniors-images/D_053.png', 'delight-seniors-images/D_054.png',
-        'delight-seniors-images/D_055.png', 'delight-seniors-images/D_056.png', 'delight-seniors-images/D_057.png',
-        'delight-seniors-images/D_058.png', 'delight-seniors-images/D_059.png', 'delight-seniors-images/D_060.png',
-        'delight-seniors-images/D_061.png', 'delight-seniors-images/D_062.png', 'delight-seniors-images/D_063.png',
-        'delight-seniors-images/D_064.png', 'delight-seniors-images/D_065.png', 'delight-seniors-images/D_066.png',
-        'delight-seniors-images/D_067.png', 'delight-seniors-images/D_068.png', 'delight-seniors-images/D_069.png',
-        'delight-seniors-images/D_070.png', 'delight-seniors-images/D_071.png', 'delight-seniors-images/D_072.png',
-        'delight-seniors-images/D_073.png', 'delight-seniors-images/D_074.png', 'delight-seniors-images/D_075.png',
-        'delight-seniors-images/D_076.png', 'delight-seniors-images/D_077.png', 'delight-seniors-images/D_078.png'
-      ];
+      var IMAGES = [];
       var box = document.getElementById('gallery-box');
       var lightbox = document.getElementById('lightbox');
       var lightboxImg = document.getElementById('lightbox-img');
@@ -607,9 +581,10 @@
       var selectedIndices = new Set();
       var selectionMode = false;
 
-      initGalleryMosaic(box, IMAGES, function (ordered) {
-        IMAGES.length = 0;
-        Array.prototype.push.apply(IMAGES, ordered);
+      function startGallery() {
+          initGalleryMosaic(box, IMAGES, function (ordered) {
+            IMAGES.length = 0;
+            Array.prototype.push.apply(IMAGES, ordered);
 
       function updateSelectionCount() {
         var n = selectedIndices.size;
@@ -857,7 +832,20 @@
         if (e.key === 'ArrowLeft') showPrev();
         if (e.key === 'ArrowRight') showNext();
       });
-      });
+          });
+      }
+
+      fetch('delight-seniors-images/manifest.json')
+        .then(function (r) { return r.json(); })
+        .then(function (files) {
+          files.forEach(function (f) {
+            IMAGES.push('delight-seniors-images/' + f);
+          });
+          startGallery();
+        })
+        .catch(function () {
+          console.error('Could not load delight-seniors-images/manifest.json');
+        });
     })();
   </script>
 </body>

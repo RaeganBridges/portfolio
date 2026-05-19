@@ -543,6 +543,7 @@
         document.body.classList.add('unlocked');
         gate.classList.add('hidden');
         content.setAttribute('aria-hidden', 'false');
+        document.dispatchEvent(new CustomEvent('gallery-unlock'));
       }
 
       function showError(msg) {
